@@ -1,0 +1,45 @@
+{% include 'base.html' %}
+{% load static %} 
+<head>
+<link rel="stylesheet" href="/static/styles/style.css">
+<title>Создание/редактирование записи</title> 
+<section class="project-area"> 
+</head>
+<h1>Страница создания/редактирования записи</h1>
+
+<form id="record-form">
+    <!-- Поле даты -->
+    <label for="record-date">Дата:</label>
+    <input type="date" id="record-date" name="date" required />
+
+    <!-- Поле статуса -->
+    <label for="record-status">Статус:</label>
+    <select id="record-status" name="status" required>
+        <option value="">Все статусы</option>
+        <option value="busines">Бизнес</option>
+        <option value="personal">Личное</option>
+        <option value="tax">Налог</option>
+    </select>
+
+    <!-- Поле типа -->
+    <label for="record-type">Тип:</label>
+    <select id="record-type" name="type" required>
+        <option value="">Все типы</option>
+        <option value="plus">Пополнение</option>
+        <option value="minus">Списание</option>
+    </select>
+
+    <!-- Поле категории -->
+    <label for="record-category">Категория:</label>
+    <select id="record-category" name="category" required>
+        <option value="">Все категории</option>
+        <option value="infrastructure">Инфраструктура</option>
+        <option value="marketing">Маркетинг</option>
+    </select>
+
+    <!-- Поле подкатегории (зависит от выбранной категории) -->
+    <label for="record-subcategory">Подкатегория:</label>
+    <select id="record-subcategory" name="subcategory" required></select>
+
+    <button type="submit">Сохранить</button>
+</form>

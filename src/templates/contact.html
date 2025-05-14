@@ -1,30 +1,30 @@
-{% include 'navbar.html' %} 
+{% include 'base.html' %}
 {% load static %} 
-<link rel="stylesheet" href="{% static 'styles/style.css' %}"> 
+<link rel="stylesheet" href="/static/styles/style.css">
 <title>Управление справочниками</title> 
 <section id="contact"> 
-	<center> 
-	<font size="6"> 
-			
-<p>CONTACT INFO</p> 
+			{% block content %}
+<h2>Управление справочниками</h2>
 
-	</font> 
-		<div class="contact-item"> 
-			<h1>Phone Number</h1> 
-			<h2>+xx-xxxxxxxxxx</h2> 
-		</div> 
-		</div> 
-		<div class="contact-item"> 
-			<h1>Email</h1> 
-			<h2>xyz@example.com</h2> 
-		</div> 
-		</div> 
-		<div class="contact-item"> 
-			<h1>Address</h1> 
-			<h2>City, State, Country</h2> 
-		</div> 
-		</div> 
-	</div> 
-	</div> 
-	</center> 
-</section>
+<h3>Статусы</h3>
+    <div>
+        <input type="text" id="new-status-name" placeholder="Новое название статуса"/>
+        <button onclick="addStatus()">Добавить статус</button>
+        <ul id="status-list"></ul>
+    </div>
+<h3>Типы</h3>
+    <div>
+        <input type="text" id="new-type-name" placeholder="Новое название типа"/>
+        <button onclick="addType()">Добавить тип</button>
+        <ul id="tipe-list"></ul>
+    </div>
+<h3>Категории</h3>
+    <div>
+        <input type="text" id="new-category-name" placeholder="Новое название категории"/>
+        <button onclick="addCategory()">Добавить категорию</button>
+        <ul id="category-list"></ul>
+    </div>
+    </form>
+    
+{% endblock %}
+
