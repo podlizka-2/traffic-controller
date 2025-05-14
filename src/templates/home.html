@@ -9,51 +9,92 @@
 <h1>Записи движения денежных средств</h1>
 <img src="{% static 'images/mani.png' %}" width="200" height="200"> 
 <form method="get">
-    <input type="date" name="date">
+    <legend><h1>Фильтры</h1></legend>
+    <label for="date_from">Дата от:</label>
+    <input type="date" id="date_from" name="date_from" value="{{ filters.date_from }}">
+    <label for="date_to">до:</label>
+    <input type="date" id="date_to" name="date_to" value="{{ filters.date_to }}">
+
     <select name="status">
         <option value="">Все статусы</option>
         <option value="busines">Бизнес</option>
         <option value="personal">Личное</option>
         <option value="tax">Налог</option>
+        {% for status in statuses %}
+            <option value="{{ status.id }}" {% if filters.status == status.id %}selected{% endif %}>{{ status.name }}</option>
+        {% endfor %}
     </select>
+
     <select name="type">
         <option value="">Все типы</option>
         <option value="plus">Пополнение</option>
         <option value="minus">Списание</option>
+    </select>    
+      
     </select>
-    <select name="category">
+    <select id="category" name="category">
+        <option value="">Выберите категорию</option>
         <option value="">Все категории</option>
         <option value="infrastructure">Инфраструктура</option>
         <option value="marketing">Маркетинг</option>
+        {% for cat in categories %}
+        <option value="{{ cat.id }}" {% if filters.category == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+        {% endfor %}
     </select>
-    <input type="number" min="0" placeholder="Введите сумму" name="summ">
+      
+    <select id="subcategory" name="subcategory"disabled>
+        <option value="">Выберите подкатегорию</option>
+        {% for sub in subcategories %}
+            <option value="{{ sub.id }}" {% if filters.subcategory == sub.id %}selected{% endif %}>{{ sub.name }}</option>
+        {% endfor %}
+    </select>
+
+    <!--<input type="number" min="0" placeholder="Введите сумму" name="summ">
     <input type="text" placeholder="Введите комментарий (Не обязательно)" name="comment">
-    <!-- Аналогичные фильтры для type, category -->
-    <button type="submit">Фильтровать</button>
-</form>
+     Аналогичные фильтры для type, category -->
+    <button type="submit">Применить фильтры</button>
 
-<table>
-    <tr>
-        <th>Дата</th>
-        <th>Статус</th>
-        <th>Тип</th>
-		<th>Категория</th>
-        <th>Подкатегория</th>
-        <th>Сумма</th>
-        <th>Комментарий</th>
+    <thead>
+        <tr>
+            <th>Дата</th>
+            <th>Статус</th>
+            <th>Тип</th>
+            <th>Категория</th>
+            <th>Подкатегория</th>
+            <th>Сумма</th>
+            <th>Комментарий</th>
+            <!-- Можно добавить действия: редактировать/удалить -->
+            <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for record in records %}
+            <tr>
+                <td>{{ record.date }}</td>
+                <td>{{ record.status.name }}</td> <!-- предполагается, что есть ForeignKey к Status -->
+                <td>{{ record.type.name }}</td>   <!-- предполагается, что есть ForeignKey к Type -->
+                <td>{{ record.category.name }}</td><!-- предполагается, что есть ForeignKey к Category -->
+                <td>{{ record.subcategory.name }}</td><!-- предполагается, что есть ForeignKey к Subcategory -->
+                <td>{{ record.amount }}</td>       <!-- сумма -->
+                <td>{{ record.comment }}</td>      <!-- комментарий -->
 
-    </tr>
-    {% for DDSRecord in DDSRecords %}
-    <tr>
-        <td>{{ DDSRecords.date }}</td>
-        <td>{{ DDSRecords.status.name }}</td>
-        <td>{{ DDSRecords.type }}</td>
-		<td>{{ DDSRecords.category }}</td>
-        <td>{{ DDSRecords.subcategory }}</td>
-        <td>{{ DDSRecords.amount }}</td>
-        <td>{{ DDSRecords.comment }}</td>
-
-    </tr>
-    {% endfor %}
+                <!-- Действия: редактировать / удалять -->
+                <td>
+                    <!-- Предположим, у вас есть URL с именем 'record_edit' и 'record_delete' -->
+                    <a href="{% url 'record_edit' record.id %}">Редактировать</a> |
+                    <a href="{% url 'record_delete' record.id %}" onclick="return confirm('Удалить запись?')">Удалить</a>
+                </td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="8">Нет записей по выбранным фильтрам.</td></tr>
+        {% endfor %}
+    </tbody>
 </table>
+
+<!-- Можно добавить кнопку для добавления новой записи -->
+<p><a href="{% url 'record_create' %}">Добавить новую запись</a></p>
+
+<!-- Скрипт для динамической подгрузки подкатегорий при выборе категории (опционально)-->
+<script src="{% static 'js/jquery.min.js' %}"></script> 
+<script>
 {% endblock %}
