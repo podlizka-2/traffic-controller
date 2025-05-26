@@ -1,59 +1,81 @@
 {% include 'base.html' %}
-{% load static %} 
+{% load static %}
+
 <head>
-<link rel="stylesheet" href="/static/styles/style.css">
-<title>Главная страница</title> 
-<section class="home"> 
+    <title>Главная страница</title>
+    <link rel="stylesheet" href="{% static 'styles/style.css' %}">
+    <!-- Можно подключить jQuery, если его еще нет в base.html -->
+    <script src="{% static 'js/jquery.min.js' %}"></script>
 </head>
 {% block content %}
+<body>
+<section class="home">
 <h1>Записи движения денежных средств</h1>
-<img src="{% static 'images/mani.png' %}" width="200" height="200"> 
+<img src="{% static 'images/mani.png' %}" width="200" height="200">
+
 <form method="get">
-    <legend><h1>Фильтры</h1></legend>
-    <label for="date_from">Дата от:</label>
-    <input type="date" id="date_from" name="date_from" value="{{ filters.date_from }}">
-    <label for="date_to">до:</label>
-    <input type="date" id="date_to" name="date_to" value="{{ filters.date_to }}">
+    <fieldset>
+        <legend><h1>Фильтры</h1></legend>
 
-    <select name="status">
-        <option value="">Все статусы</option>
-        <option value="busines">Бизнес</option>
-        <option value="personal">Личное</option>
-        <option value="tax">Налог</option>
-        {% for status in statuses %}
-            <option value="{{ status.id }}" {% if filters.status == status.id %}selected{% endif %}>{{ status.name }}</option>
-        {% endfor %}
-    </select>
+        <label for="date_from">Дата от:</label>
+        <input type="date" id="date_from" name="date_from" value="{{ filters.date_from }}">
 
-    <select name="type">
-        <option value="">Все типы</option>
-        <option value="plus">Пополнение</option>
-        <option value="minus">Списание</option>
-    </select>    
-      
-    </select>
-    <select id="category" name="category">
-        <option value="">Выберите категорию</option>
-        <option value="">Все категории</option>
-        <option value="infrastructure">Инфраструктура</option>
-        <option value="marketing">Маркетинг</option>
-        {% for cat in categories %}
-        <option value="{{ cat.id }}" {% if filters.category == cat.id %}selected{% endif %}>{{ cat.name }}</option>
-        {% endfor %}
-    </select>
-      
-    <select id="subcategory" name="subcategory"disabled>
-        <option value="">Выберите подкатегорию</option>
-        {% for sub in subcategories %}
-            <option value="{{ sub.id }}" {% if filters.subcategory == sub.id %}selected{% endif %}>{{ sub.name }}</option>
-        {% endfor %}
-    </select>
+        <label for="date_to">до:</label>
+        <input type="date" id="date_to" name="date_to" value="{{ filters.date_to }}">
 
-    <!--<input type="number" min="0" placeholder="Введите сумму" name="summ">
-    <input type="text" placeholder="Введите комментарий (Не обязательно)" name="comment">
-     Аналогичные фильтры для type, category -->
-    <button type="submit">Применить фильтры</button>
+        <br><br>
 
+        <label for="status">Статус:</label>
+        <select name="status" id="status">
+            <option value="">Все статусы</option>
+            <option value="business" {% if filters.status == 'business' %}selected{% endif %}>Бизнес</option>
+            <option value="personal" {% if filters.status == 'personal' %}selected{% endif %}>Личное</option>
+            <option value="tax" {% if filters.status == 'tax' %}selected{% endif %}>Налог</option>
+            {% for status in statuses %}
+                <option value="{{ status.id }}" {% if filters.status == status.id|stringformat:"s" %}selected{% endif %}>{{ status.name }}</option>
+            {% endfor %}
+        </select>
+
+        <br><br>
+
+        <label for="type">Тип:</label>
+        <select name="type" id="type">
+            <option value="">Все типы</option>
+            <option value="plus" {% if filters.type == 'plus' %}selected{% endif %}>Пополнение</option>
+            <option value="minus" {% if filters.type == 'minus' %}selected{% endif %}>Списание</option>
+        </select>
+
+        <br><br>
+
+        <!-- Категория -->
+        <label for="category">Категория:</label>
+        <select id="category" name="category">
+            <option value="">Выберите категорию</option>
+            <!-- Варианты категорий -->
+            {% for cat in categories %}
+                <option value="{{ cat.id }}" {% if filters.category == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
+            {% endfor %}
+        </select>
+
+        <!-- Подкатегория -->
+        <label for="subcategory">Подкатегория:</label>
+        <select id="subcategory" name="subcategory" disabled>
+            <option value="">Выберите подкатегорию</option>
+            {% for sub in subcategory %}
+                <option value="{{ sub.id }}" {% if filters.subcategory == sub.id|stringformat:"s" %}selected{% endif %}>{{ sub.name }}</option>
+            {% endfor %}
+        </select>
+
+        <!-- Можно добавить дополнительные фильтры по сумме, комментариям и т.п. -->
+
+        <br><br>
+
+        <button type="submit">Применить фильтры</button>
+    </fieldset>
+</form>
+
+<!-- Таблица с записями -->
+<table border="1">
     <thead>
         <tr>
             <th>Дата</th>
@@ -63,7 +85,6 @@
             <th>Подкатегория</th>
             <th>Сумма</th>
             <th>Комментарий</th>
-            <!-- Можно добавить действия: редактировать/удалить -->
             <th>Действия</th>
         </tr>
     </thead>
@@ -71,16 +92,16 @@
         {% for record in records %}
             <tr>
                 <td>{{ record.date }}</td>
-                <td>{{ record.status.name }}</td> <!-- предполагается, что есть ForeignKey к Status -->
-                <td>{{ record.type.name }}</td>   <!-- предполагается, что есть ForeignKey к Type -->
-                <td>{{ record.category.name }}</td><!-- предполагается, что есть ForeignKey к Category -->
-                <td>{{ record.subcategory.name }}</td><!-- предполагается, что есть ForeignKey к Subcategory -->
-                <td>{{ record.amount }}</td>       <!-- сумма -->
-                <td>{{ record.comment }}</td>      <!-- комментарий -->
-
+                <!-- Предполагается, что у модели есть ForeignKey к Status, Type, Category, Subcategory -->
+                <td>{{ record.status.name }}</td> 
+                <td>{{ record.type.name }}</td>   
+                <td>{{ record.category.name }}</td> 
+                <td>{{ record.subcategory.name }}</td> 
+                <td>{{ record.amount }}</td>       
+                <td>{{ record.comment }}</td>      
                 <!-- Действия: редактировать / удалять -->
                 <td>
-                    <!-- Предположим, у вас есть URL с именем 'record_edit' и 'record_delete' -->
+                    <!-- Предположим, есть URL с именами 'record_edit', 'record_delete', 'record_create' -->
                     <a href="{% url 'record_edit' record.id %}">Редактировать</a> |
                     <a href="{% url 'record_delete' record.id %}" onclick="return confirm('Удалить запись?')">Удалить</a>
                 </td>
@@ -91,10 +112,45 @@
     </tbody>
 </table>
 
-<!-- Можно добавить кнопку для добавления новой записи -->
+<!-- Кнопка для добавления новой записи -->
 <p><a href="{% url 'record_create' %}">Добавить новую запись</a></p>
 
-<!-- Скрипт для динамической подгрузки подкатегорий при выборе категории (опционально)-->
-<script src="{% static 'js/jquery.min.js' %}"></script> 
+<!-- Скрипт для динамической подгрузки подкатегорий при выборе категории -->
 <script>
+// Обработка изменения категории
+$(document).ready(function() {
+    $('#category').change(function() {
+        var categoryId = $(this).val();
+
+        // Очистка и отключение подкатегории по умолчанию
+        $('#subcategory').empty();
+        $('#subcategory').append('<option value="">Выберите подкатегорию</option>');
+        $('#subcategory').prop('disabled', true);
+
+        if (categoryId) {
+            $.ajax({
+                url: "{% url 'load_subcategory' %}", // URL для получения подкатегорий
+                data: {
+                    'category_id': categoryId
+                },
+                dataType: 'json',
+                success: function(data) {
+                    if (data.subcategory.length > 0) {
+                        $.each(data.subcategory, function(index, sub) {
+                            $('#subcategory').append(
+                                $('<option></option>').val(sub.id).text(sub.name)
+                            );
+                        });
+                        $('#subcategory').prop('disabled', false);
+                    }
+                },
+                error: function() {
+                    alert('Ошибка при загрузке подкатегорий');
+                }
+            });
+        }
+    });
+});
+</script>
+
 {% endblock %}

@@ -3,6 +3,9 @@ from .models import DDSRecords, Status, Type, Category, Subcategory
 from datetime import datetime
 from django.shortcuts import get_object_or_404, redirect, render
 from .forms import DDSRecordsForm
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
 
 def home(request): 
 	return render(request, "home.html") 
@@ -53,7 +56,7 @@ def main_page(request):
         'statuses': Status.objects.all(),
         'types': Type.objects.all(),
         'categories': Category.objects.all(),
-        'subcategories': Subcategory.objects.all(),
+        'subcategory': Subcategory.objects.all(),
         'filters': {
             'date_from': date_from,
             'date_to': date_to,
@@ -94,3 +97,43 @@ def record_delete(request, pk):
         record.delete()
         return redirect('some_view_name')  # перенаправление после удаления
     return render(request, 'confirm_delete.html', {'record': record})
+
+
+def load_subcategory(request):
+    category_id = request.GET.get('category_id')
+    if not category_id:
+        return JsonResponse({'subcategory': []})
+
+    # Получите подкатегории по выбранной категории
+    subcategory = Subcategory.objects.filter(category_id=category_id)
+
+    # Формируем список словарей для JSON
+    data = {
+        'subcategory': [
+            {'id': sub.id, 'name': sub.name}
+            for sub in subcategory
+        ]
+    }
+    return JsonResponse(data)
+
+@csrf_exempt  # Или лучше использовать CSRF токен
+def save_record(request):
+    if request.method == 'POST':
+        data = request.POST
+        # Обработка данных, создание или обновление записи
+        record_id = data.get('id')  # если есть id для редактирования
+        if record_id:
+            record = DDSRecords.objects.get(id=record_id)
+        else:
+            record = DDSRecords()
+
+        # Заполнение полей
+        record.date = data.get('date')
+        record.status_id = data.get('status')  # предполагается ForeignKey
+        record.type_id = data.get('type')
+        record.category_id = data.get('category')
+        record.subcategory_id = data.get('subcategory')
+        # Добавьте остальные поля по необходимости
+        record.save()
+        return JsonResponse({'status': 'success'})
+    return JsonResponse({'status': 'error'}, status=400)

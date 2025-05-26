@@ -8,5 +8,7 @@ urlpatterns = [
     path('record/<int:pk>/edit/', views.record_edit, name='record_edit'),
     path('record/<int:pk>/delete/', views.record_delete, name='record_delete'),
     path('record/create/', views.record_create, name='record_create'),
-    
+    path('ajax/load-subcategory/', views.load_subcategory, name='load_subcategory'),
+    path('save_record/', views.save_record, name='save_record'),
+
 ]
