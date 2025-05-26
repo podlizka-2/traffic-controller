@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from .forms import DDSRecordsForm
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_GET
 
 
 def home(request): 
@@ -137,3 +138,26 @@ def save_record(request):
         record.save()
         return JsonResponse({'status': 'success'})
     return JsonResponse({'status': 'error'}, status=400)
+
+
+@require_GET
+def load_categories(request):
+    type_id = request.GET.get('type_id')
+    if not type_id:
+        return JsonResponse({'categories': []})
+    categories = Category.objects.filter(type_id=type_id)
+    data = {
+        'categories': [{'id': c.id, 'name': c.name} for c in categories]
+    }
+    return JsonResponse(data)
+
+@require_GET
+def load_subcategory(request):
+    category_id = request.GET.get('category_id')
+    if not category_id:
+        return JsonResponse({'subcategory': []})
+    subcategory = Subcategory.objects.filter(category_id=category_id)
+    data = {
+        'subcategory': [{'id': s.id, 'name': s.name} for s in subcategory]
+    }
+    return JsonResponse(data)
