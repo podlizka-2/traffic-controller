@@ -52,7 +52,7 @@
         <select id="category" name="category">
             <option value="">Выберите категорию</option>
             <!-- Варианты категорий -->
-            {% for cat in categories %}
+            {% for cat in category %}
                 <option value="{{ cat.id }}" {% if filters.category == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
             {% endfor %}
         </select>
@@ -116,41 +116,66 @@
 <p><a href="{% url 'record_create' %}">Добавить новую запись</a></p>
 
 <!-- Скрипт для динамической подгрузки подкатегорий при выборе категории -->
-<script>
-// Обработка изменения категории
-$(document).ready(function() {
-    $('#category').change(function() {
-        var categoryId = $(this).val();
-
-        // Очистка и отключение подкатегории по умолчанию
-        $('#subcategory').empty();
-        $('#subcategory').append('<option value="">Выберите подкатегорию</option>');
-        $('#subcategory').prop('disabled', true);
-
-        if (categoryId) {
-            $.ajax({
-                url: "{% url 'load_subcategory' %}", // URL для получения подкатегорий
-                data: {
-                    'category_id': categoryId
-                },
-                dataType: 'json',
-                success: function(data) {
-                    if (data.subcategory.length > 0) {
-                        $.each(data.subcategory, function(index, sub) {
-                            $('#subcategory').append(
-                                $('<option></option>').val(sub.id).text(sub.name)
-                            );
-                        });
-                        $('#subcategory').prop('disabled', false);
-                    }
-                },
-                error: function() {
-                    alert('Ошибка при загрузке подкатегорий');
-                }
-            });
-        }
+<!-- Пример: -->
+<select id="type-select" name="type">
+    {% for t in types %}
+    <option value="{{ t.id }}" {% if filters.type == t.id %}selected{% endif %}>{{ t.name }}</option>
+    {% endfor %}
+  </select>
+  
+  <select id="category-select" name="category">
+    <option value="">Выберите категорию</option>
+    {% for c in categories %}
+    <option value="{{ c.id }}" {% if filters.category == c.id %}selected{% endif %}>{{ c.name }}</option>
+    {% endfor %}
+  </select>
+  
+  <select id="subcategory-select" name="subcategory">
+    <option value="">Выберите подкатегорию</option>
+    {% for s in subcategory %}
+    <option value="{{ s.id }}" {% if filters.subcategory == s.id %}selected{% endif %}>{{ s.name }}</option>
+    {% endfor %}
+  </select>
+  
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+  $(document).ready(function() {
+    
+    // Загрузка категорий при изменении типа
+    $('#type-select').change(function() {
+        var typeId = $(this).val();
+        $.ajax({
+            url: '{% url "load_categories" %}',
+            data: {'type_id': typeId},
+            success: function(data) {
+                var categorySelect = $('#category-select');
+                categorySelect.empty();
+                categorySelect.append('<option value="">Выберите категорию</option>');
+                $.each(data.categories, function(index, item) {
+                    categorySelect.append('<option value="' + item.id + '">' + item.name + '</option>');
+                });
+                $('#subcategory-select').empty().append('<option value="">Выберите подкатегорию</option>');
+            }
+        });
     });
-});
-</script>
+  
+    // Загрузка подкатегорий при изменении категории
+    $('#category-select').change(function() {
+        var categoryId = $(this).val();
+        $.ajax({
+            url: '{% url "load_subcategory" %}',
+            data: {'category_id': categoryId},
+            success: function(data) {
+                var subcategorySelect = $('#subcategory-select');
+                subcategorySelect.empty();
+                subcategorySelect.append('<option value="">Выберите подкатегорию</option>');
+                $.each(data.subcategory, function(index, item) {
+                    subcategorySelect.append('<option value="' + item.id + '">' + item.name + '</option>');
+                });
+            }
+        });
+    });
+  });
+  </script>
 
 {% endblock %}
