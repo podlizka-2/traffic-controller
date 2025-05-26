@@ -35,66 +35,88 @@
             {% endfor %}
         </select>
 
+</head>
+<body>
+    <h1>Выберите тип, категорию и подкатегорию</h1>
 
-      <!-- Скрипт для динамической подгрузки подкатегорий при выборе категории -->
-      <select id="type-select" name="type">
-        <option value="">Выберите тип</option>
-      </select>
+    <!---Select для типа -->
+    <label for="typeSelect">Тип:</label>
+    <select id="typeSelect">
+        <option value="">--Выберите тип--</option>
+        {% for type in types %}
+            <option value="{{ type.id }}">{{ type.name }}</option>
+        {% endfor %}
+    </select>
 
-      <!-- select для категории -->
-      <select id="category-select" name="category">
-        <option value="">Выберите категорию</option>
-      </select>
+    <!---Select для типа -->
+    <label for="categorySelect">Категория:</label>
+    <select id="categorySelect" disabled>
+        <option value="">--Выберите категорию--</option>
+    </select>
 
+    <!-- Select для подкатегории -->
+    <label for="subcategorySelect">Подкатегория:</label>
+    <select id="subcategorySelect" disabled>
+        <option value="">--Выберите подкатегорию--</option>
+    </select>
 
-      <!-- select для подкатегории -->
-      <select id="subcategory-select" name="subcategory">
-        <option value="">Выберите подкатегорию</option>
-      </select>
+    <!-- Скрипт для динамического обновления -->
+    <script>
+        // Получаем данные из контекста
+        const categoriesByType = {{ categories_by_type|safe }};
 
-      <script>
-      document.addEventListener('DOMContentLoaded', function() {
-      const typeSelect = document.getElementById('type-select');
-      const categorySelect = document.getElementById('category-select');
-      const subcategorySelect = document.getElementById('subcategory-select');
+        const typeSelect = document.getElementById('typeSelect');
+        const categorySelect = document.getElementById('categorySelect');
+        const subcategorySelect = document.getElementById('subcategorySelect');
 
-  // Загрузка категорий при выборе типа
-  typeSelect.addEventListener('change', function() {
-    const typeId = this.value;
-    fetch(`/load_categories/?type_id=${typeId}`)
-      .then(response => response.json())
-      .then(data => {
-        // Очистка текущих опций
-        categorySelect.innerHTML = '<option value="">Выберите категорию</option>';
-        subcategorySelect.innerHTML = '<option value="">Выберите подкатегорию</option>';
+        // Обработчик изменения типа
+        typeSelect.addEventListener('change', function() {
+            const selectedType = this.value;
 
-        // Заполнение новыми опциями
-        data.categories.forEach(cat => {
-          const option = document.createElement('option');
-          option.value = cat.id;
-          option.textContent = cat.name;
-          categorySelect.appendChild(option);
+            // Очистка и отключение категорий и подкатегорий
+            categorySelect.innerHTML = '<option value="">--Выберите категорию--</option>';
+            categorySelect.disabled = true;
+            subcategorySelect.innerHTML = '<option value="">--Выберите подкатегорию--</option>';
+            subcategorySelect.disabled = true;
+
+            if (selectedType && categoriesByType[selectedType]) {
+                // Заполняем категории
+                categoriesByType[selectedType].forEach(cat => {
+                    const option = document.createElement('option');
+                    option.value = cat.id;
+                    option.textContent = cat.name;
+                    categorySelect.appendChild(option);
+                });
+                categorySelect.disabled = false;
+            }
         });
-      });
-  });
 
-  // Загрузка подкатегорий при выборе категории
-  categorySelect.addEventListener('change', function() {
-    const categoryId = this.value;
-    fetch(`/load_subcategory/?category_id=${categoryId}`)
-      .then(response => response.json())
-      .then(data => {
-        subcategorySelect.innerHTML = '<option value="">Выберите подкатегорию</option>';
-        data.subcategories.forEach(sub => {
-          const option = document.createElement('option');
-          option.value = sub.id;
-          option.textContent = sub.name;
-          subcategorySelect.appendChild(option);
+        // Обработчик изменения категории
+        categorySelect.addEventListener('change', function() {
+            const selectedType = typeSelect.value;
+            const selectedCategoryId = this.value;
+
+            // Очистка и отключение подкатегорий
+            subcategorySelect.innerHTML = '<option value="">--Выберите подкатегорию--</option>';
+            subcategorySelect.disabled = true;
+
+            if (selectedCategoryId && categoriesByType[selectedType]) {
+                const categoryObj = categoriesByType[selectedType].find(cat => cat.id === selectedCategoryId);
+                if (categoryObj && categoryObj.subcategories) {
+                    categoryObj.subcategories.forEach(sub => {
+                        const option = document.createElement('option');
+                        option.value = sub.id;
+                        option.textContent = sub.name;
+                        subcategorySelect.appendChild(option);
+                    });
+                    subcategorySelect.disabled = false;
+                }
+            }
         });
-      });
-  });
-});
-</script>
+    </script>
+</body>
+</html>
+
 
         <br><br>
 
