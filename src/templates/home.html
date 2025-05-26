@@ -1,15 +1,13 @@
-{% extends 'base.html' %}
+{% include 'base.html' %}
 {% load static %}
 
-{% block title %}Главная страница{% endblock %}
-
-{% block extra_head %}
-<link rel="stylesheet" href="{% static 'styles/style.css' %}">
-<!-- jQuery подключен только один раз, предполагается, что в base.html он уже есть -->
-<script src="{% static 'js/jquery.min.js' %}"></script>
-{% endblock %}
-
+<head>
+    <title>Главная страница</title>
+    <link rel="stylesheet" href="{% static 'styles/style.css' %}">
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+</head>
 {% block content %}
+<body>
 <section class="home">
 <h1>Записи движения денежных средств</h1>
 <img src="{% static 'images/mani.png' %}" width="200" height="200">
@@ -33,43 +31,70 @@
             <option value="personal" {% if filters.status == 'personal' %}selected{% endif %}>Личное</option>
             <option value="tax" {% if filters.status == 'tax' %}selected{% endif %}>Налог</option>
             {% for status in statuses %}
-                <option value="{{ status.id }}" {% if filters.status|stringformat:"s" == status.id|stringformat:"s" %}selected{% endif %}>{{ status.name }}</option>
+                <option value="{{ status.id }}" {% if filters.status == status.id|stringformat:"s" %}selected{% endif %}>{{ status.name }}</option>
             {% endfor %}
         </select>
 
-        <br><br>
 
-        <label for="type">Тип:</label>
-        <select name="type" id="type">
-            <option value="">Все типы</option>
-            <option value="plus" {% if filters.type == 'plus' %}selected{% endif %}>Пополнение</option>
-            <option value="minus" {% if filters.type == 'minus' %}selected{% endif %}>Списание</option>
-        </select>
+      <!-- Скрипт для динамической подгрузки подкатегорий при выборе категории -->
+      <select id="type-select" name="type">
+        <option value="">Выберите тип</option>
+      </select>
 
-        <br><br>
+      <!-- select для категории -->
+      <select id="category-select" name="category">
+        <option value="">Выберите категорию</option>
+      </select>
 
-        <!-- Категория -->
-        <label for="category">Категория:</label>
-        <select id="category" name="category">
-            <option value="">Выберите категорию</option>
-            {% for cat in category %}
-                <option value="{{ cat.id }}" {% if filters.category|stringformat:"s" == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
-            {% endfor %}
-        </select>
 
-        <!-- Подкатегория -->
-        <label for="subcategory">Подкатегория:</label>
-        <select id="subcategory" name="subcategory">
-            {% if subcategory %}
-                {% for sub in subcategory %}
-                    <option value="{{ sub.id }}" {% if filters.subcategory|stringformat:"s" == sub.id|stringformat:"s" %}selected{% endif %}>{{ sub.name }}</option>
-                {% endfor %}
-            {% else %}
-                <option value="">Выберите подкатегорию</option>
-            {% endif %}
-        </select>
+      <!-- select для подкатегории -->
+      <select id="subcategory-select" name="subcategory">
+        <option value="">Выберите подкатегорию</option>
+      </select>
 
-        <!-- Можно добавить дополнительные фильтры по сумме, комментариям и т.п. -->
+      <script>
+      document.addEventListener('DOMContentLoaded', function() {
+      const typeSelect = document.getElementById('type-select');
+      const categorySelect = document.getElementById('category-select');
+      const subcategorySelect = document.getElementById('subcategory-select');
+
+  // Загрузка категорий при выборе типа
+  typeSelect.addEventListener('change', function() {
+    const typeId = this.value;
+    fetch(`/load_categories/?type_id=${typeId}`)
+      .then(response => response.json())
+      .then(data => {
+        // Очистка текущих опций
+        categorySelect.innerHTML = '<option value="">Выберите категорию</option>';
+        subcategorySelect.innerHTML = '<option value="">Выберите подкатегорию</option>';
+
+        // Заполнение новыми опциями
+        data.categories.forEach(cat => {
+          const option = document.createElement('option');
+          option.value = cat.id;
+          option.textContent = cat.name;
+          categorySelect.appendChild(option);
+        });
+      });
+  });
+
+  // Загрузка подкатегорий при выборе категории
+  categorySelect.addEventListener('change', function() {
+    const categoryId = this.value;
+    fetch(`/load_subcategory/?category_id=${categoryId}`)
+      .then(response => response.json())
+      .then(data => {
+        subcategorySelect.innerHTML = '<option value="">Выберите подкатегорию</option>';
+        data.subcategories.forEach(sub => {
+          const option = document.createElement('option');
+          option.value = sub.id;
+          option.textContent = sub.name;
+          subcategorySelect.appendChild(option);
+        });
+      });
+  });
+});
+</script>
 
         <br><br>
 
@@ -82,13 +107,12 @@
     <thead>
         <tr>
             <th>Дата</th>
-            <!-- Предполагается, что у модели есть ForeignKey к Status, Type, Category, Subcategory -->
-            <th>Статус</th> 
-            <th>Тип</th>   
-            <th>Категория</th> 
-            <th>Подкатегория</th> 
-            <th>Сумма</th> 
-            <th>Комментарий</th> 
+            <th>Статус</th>
+            <th>Тип</th>
+            <th>Категория</th>
+            <th>Подкатегория</th>
+            <th>Сумма</th>
+            <th>Комментарий</th>
             <th>Действия</th>
         </tr>
     </thead>
@@ -97,10 +121,10 @@
             <tr>
                 <td>{{ record.date }}</td>
                 <!-- Предполагается, что у модели есть ForeignKey к Status, Type, Category, Subcategory -->
-                {{ record.status.name|default:"-" }}
-                {{ record.type.name|default:"-" }}
-                {{ record.category.name|default:"-" }}
-                {{ record.subcategory.name|default:"-" }}
+                <td>{{ record.status.name }}</td> 
+                <td>{{ record.type.name }}</td>   
+                <td>{{ record.category.name }}</td> 
+                <td>{{ record.subcategory.name }}</td> 
                 <td>{{ record.amount }}</td>       
                 <td>{{ record.comment }}</td>      
                 <!-- Действия: редактировать / удалять -->
@@ -119,48 +143,5 @@
 <!-- Кнопка для добавления новой записи -->
 <p><a href="{% url 'record_create' %}">Добавить новую запись</a></p>
 
-<!-- Скрипты для динамической подгрузки категорий и подкатегорий -->
-{% block extra_js %}
-<script src="{% static 'js/jquery.min.js' %}"></script>
-<script>
-// Обеспечьте подключение jQuery только один раз в base.html или здесь
-$(document).ready(function() {
-    
-    // Загрузка категорий при изменении типа
-    $('#type').change(function() {
-        var typeId = $(this).val();
-        $.ajax({
-            url: '{% url "load_categories" %}',
-            data: {'type_id': typeId},
-            success: function(data) {
-                var categorySelect = $('#category');
-                categorySelect.empty();
-                categorySelect.append('<option value="">Выберите категорию</option>');
-                $.each(data.categories, function(index, item) {
-                    categorySelect.append('<option value="' + item.id + '">' + item.name + '</option>');
-                });
-                $('#subcategory').empty().append('<option value="">Выберите подкатегорию</option>');
-            }
-        });
-    });
-  
-    // Загрузка подкатегорий при изменении категории
-    $('#category').change(function() {
-        var categoryId = $(this).val();
-        $.ajax({
-            url: '{% url "load_subcategory" %}',
-            data: {'category_id': categoryId},
-            success: function(data) {
-                var subcategorySelect = $('#subcategory');
-                subcategorySelect.empty();
-                subcategorySelect.append('<option value="">Выберите подкатегорию</option>');
-                $.each(data.subcategory, function(index, item) {
-                    subcategorySelect.append('<option value="' + item.id + '">' + item.name + '</option>');
-                });
-            }
-        });
-    });
-});
-</script>
-{% endblock %}
+
 {% endblock %}

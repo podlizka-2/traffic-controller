@@ -68,6 +68,17 @@ def main_page(request):
         }
     }
     return render(request, 'app/main.html', context)
+from django.shortcuts import render
+from .models import Status, Type, Category, Subcategory
+
+def manage_references(request):
+    context = {
+        'statuses': Status.objects.all(),
+        'types': Type.objects.all(),
+        'categories': Category.objects.all(),
+        'subcategories': Subcategory.objects.all(),
+    }
+    return render(request, 'manage_references.html', context)
 
 def record_create(request):
     if request.method == 'POST':
@@ -100,22 +111,29 @@ def record_delete(request, pk):
     return render(request, 'confirm_delete.html', {'record': record})
 
 
-def load_subcategory(request):
-    category_id = request.GET.get('category_id')
-    if not category_id:
-        return JsonResponse({'subcategory': []})
-
-    # Получите подкатегории по выбранной категории
-    subcategory = Subcategory.objects.filter(category_id=category_id)
-
-    # Формируем список словарей для JSON
+@require_GET
+def load_categories(request):
+    type_id = request.GET.get('type_id')
+    if type_id:
+        categories = Category.objects.filter(type__id=type_id)
+    else:
+        categories = Category.objects.all()
     data = {
-        'subcategory': [
-            {'id': sub.id, 'name': sub.name}
-            for sub in subcategory
-        ]
+        'categories': [{'id': c.id, 'name': c.name} for c in categories]
     }
     return JsonResponse(data)
+
+@require_GET
+def load_subcategory(request):
+    category_id = request.GET.get('category_id')
+    if category_id:
+        subs = Subcategory.objects.filter(category__id=category_id)
+        data = {
+            'subcategories': [{'id': s.id, 'name': s.name} for s in subs]
+        }
+        return JsonResponse(data)
+    else:
+        return JsonResponse({'subcategories': []})
 
 @csrf_exempt  # Или лучше использовать CSRF токен
 def save_record(request):
@@ -140,24 +158,3 @@ def save_record(request):
     return JsonResponse({'status': 'error'}, status=400)
 
 
-@require_GET
-def load_categories(request):
-    type_id = request.GET.get('type_id')
-    if not type_id:
-        return JsonResponse({'categories': []})
-    categories = Category.objects.filter(type_id=type_id)
-    data = {
-        'categories': [{'id': c.id, 'name': c.name} for c in categories]
-    }
-    return JsonResponse(data)
-
-@require_GET
-def load_subcategory(request):
-    category_id = request.GET.get('category_id')
-    if not category_id:
-        return JsonResponse({'subcategory': []})
-    subcategory = Subcategory.objects.filter(category_id=category_id)
-    data = {
-        'subcategory': [{'id': s.id, 'name': s.name} for s in subcategory]
-    }
-    return JsonResponse(data)

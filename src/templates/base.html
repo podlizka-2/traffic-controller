@@ -1,33 +1,17 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <title>{% block title %}Моя система{% endblock %}</title>
-    <!-- Основные стили -->
-    <link rel="stylesheet" href="{% static 'styles/style.css' %}">
-    {% block extra_head %}
-    <!-- Дополнительные стили или скрипты в head можно вставлять здесь -->
-    {% endblock %}
-</head>
-<body>
-    <nav>
-        <ul>
-            <li><a href="/">ДДС система</a></li>
-            <li><a href="/project">Создание и редактирование записи</a></li>
-            <li><a href="/contact">Справочники</a></li>
-        </ul>
-    </nav>
-
-    <hr>
-
-    {% block content %}
-    <!-- Основной контент страницы -->
-    {% endblock %}
-
-    {% block extra_js %}
-    <!-- Дополнительные скрипты, например, jQuery или свои скрипты -->
-    {% endblock %}
-</body>
-</html>
+{% load static %} 
+<link rel="stylesheet" href="{% static 'styles/style.css' %}"> 
+<base> 
+    <ul> 
+    <li>
+        <a href="/">ДДС система </a>
+    </li> 
+    <li>
+        <a href="/project">Создание и редоктирование записи</a>
+    </li> 
+	<li>
+        <a href="/contact">Справочники</a>
+    </li> 
+    </ul> 
+</base> 
+<hr>
 
