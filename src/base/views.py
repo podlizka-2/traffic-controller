@@ -159,51 +159,53 @@ def save_record(request):
         return JsonResponse({'status': 'success'})
     return JsonResponse({'status': 'error'}, status=400)
 
+def home_view(request):
+    types = [
+        {'id': 'spisanie', 'name': 'Списание'},
+        {'id': 'dop_spisanie', 'name': 'Дополнительное списание'},
+        ]
 
-types = [
-    {'id': 'spisanie', 'name': 'Списание'},
-    {'id': 'dop_spisanie', 'name': 'Дополнительное списание'},
-]
+    categories_by_type = {
+        'spisanie': [
+            {
+                'id': 'marketing',
+                'name': 'Маркетинг',
+                'subcategories': [
+                    {'id': 'digital', 'name': 'Цифровой маркетинг'},
+                    {'id': 'print', 'name': 'Печатная реклама'},
+                ]
+            },
+            {
+                'id': 'sales',
+                'name': 'Продажи',
+                'subcategories': [
+                    {'id': 'online', 'name': 'Онлайн-продажи'},
+                    {'id': 'retail', 'name': 'Розничные продажи'},
+                ]
+            },
+        ],
+            'dop_spisanie': [
+            {
+                'id': 'admin',
+                'name': 'Административные расходы',
+                'subcategories': [
+                    {'id': 'office', 'name': 'Офисные расходы'},
+                    {'id': 'utilities', 'name': 'Коммунальные услуги'},
+            ]
+            },
+            {
+                'id': 'hr',
+                'name': 'Кадровые расходы',
+                'subcategories': [
+                    {'id': 'training', 'name': "Обучение сотрудников"},
+                    {'id': "salaries", "name": "Заработная плата"},
+                ]
+            },
+        ],
+    }
+    context = {
+        "types": types,
+        "categories_by_type": json.dumps(categories_by_type),
+    }
 
-categories_by_type = {
-    'spisanie': [
-        {
-            'id': 'marketing',
-            'name': 'Маркетинг',
-            'subcategories': [
-                {'id': 'digital', 'name': 'Цифровой маркетинг'},
-                {'id': 'print', 'name': 'Печатная реклама'},
-            ]
-        },
-        {
-            'id': 'sales',
-            'name': 'Продажи',
-            'subcategories': [
-                {'id': 'online', 'name': 'Онлайн-продажи'},
-                {'id': 'retail', 'name': 'Розничные продажи'},
-            ]
-        },
-    ],
-    'dop_spisanie': [
-        {
-            'id': 'admin',
-            'name': 'Административные расходы',
-            'subcategories': [
-                {'id': 'office', 'name': 'Офисные расходы'},
-                {'id': 'utilities', 'name': 'Коммунальные услуги'},
-            ]
-        },
-        {
-            'id': 'hr',
-            'name': 'Кадровые расходы',
-            'subcategories': [
-                {'id': 'training', 'name': "Обучение сотрудников"},
-                {'id': "salaries", "name": "Заработная плата"},
-            ]
-        },
-    ],
-}
-context = {
-    "types": types,
-    "categories_by_type": json.dumps(categories_by_type),
-}
+    return render(request, "home.html", context)

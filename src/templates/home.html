@@ -36,90 +36,80 @@
         </select>
 
 </head>
-<body>
-    <h1>Выберите тип, категорию и подкатегорию</h1>
 
-    <!---Select для типа -->
-    <label for="typeSelect">Тип:</label>
-    <select id="typeSelect">
-        <option value="">--Выберите тип--</option>
-        {% for type in types %}
-            <option value="{{ type.id }}">{{ type.name }}</option>
-        {% endfor %}
-    </select>
+<select id="typeSelect">
+  <option value="">--Выберите тип--</option>
+  {% for t in types %}
+    <option value="{{ t.id }}" {% if filters.type == t.id %}selected{% endif %}>{{ t.name }}</option>
+  {% endfor %}
+</select>
 
-    <!---Select для типа -->
-    <label for="categorySelect">Категория:</label>
-    <select id="categorySelect" disabled>
-        <option value="">--Выберите категорию--</option>
-    </select>
+<select id="categorySelect" disabled>
+  <option value="">--Выберите категорию--</option>
+  <!-- Опции заполнятся через JS -->
+</select>
 
-    <!-- Select для подкатегории -->
-    <label for="subcategorySelect">Подкатегория:</label>
-    <select id="subcategorySelect" disabled>
-        <option value="">--Выберите подкатегорию--</option>
-    </select>
-
+<select id="subcategorySelect" disabled>
+  <option value="">--Выберите подкатегорию--</option>
+  <!-- Опции заполнятся через JS -->
+</select>
     <!-- Скрипт для динамического обновления -->
     <script>
-        // Получаем данные из контекста
-        const categoriesByType = {{ categories_by_type|safe }};
-
-        const typeSelect = document.getElementById('typeSelect');
-        const categorySelect = document.getElementById('categorySelect');
-        const subcategorySelect = document.getElementById('subcategorySelect');
-
-        // Обработчик изменения типа
-        typeSelect.addEventListener('change', function() {
-            const selectedType = this.value;
-
-            // Очистка и отключение категорий и подкатегорий
-            categorySelect.innerHTML = '<option value="">--Выберите категорию--</option>';
-            categorySelect.disabled = true;
-            subcategorySelect.innerHTML = '<option value="">--Выберите подкатегорию--</option>';
-            subcategorySelect.disabled = true;
-
-            if (selectedType && categoriesByType[selectedType]) {
-                // Заполняем категории
-                categoriesByType[selectedType].forEach(cat => {
-                    const option = document.createElement('option');
-                    option.value = cat.id;
-                    option.textContent = cat.name;
-                    categorySelect.appendChild(option);
-                });
-                categorySelect.disabled = false;
-            }
-        });
-
-        // Обработчик изменения категории
-        categorySelect.addEventListener('change', function() {
-            const selectedType = typeSelect.value;
-            const selectedCategoryId = this.value;
-
-            // Очистка и отключение подкатегорий
-            subcategorySelect.innerHTML = '<option value="">--Выберите подкатегорию--</option>';
-            subcategorySelect.disabled = true;
-
-            if (selectedCategoryId && categoriesByType[selectedType]) {
-                const categoryObj = categoriesByType[selectedType].find(cat => cat.id === selectedCategoryId);
-                if (categoryObj && categoryObj.subcategories) {
-                    categoryObj.subcategories.forEach(sub => {
-                        const option = document.createElement('option');
-                        option.value = sub.id;
-                        option.textContent = sub.name;
-                        subcategorySelect.appendChild(option);
-                    });
-                    subcategorySelect.disabled = false;
-                }
-            }
-        });
-    </script>
+      // Получаем данные из контекста и парсим JSON
+      const categoriesByType = JSON.parse('{{ categories_by_type|escapejs }}');
+      console.log(categoriesByType);
+      
+      const typeSelect = document.getElementById('typeSelect');
+      const categorySelect = document.getElementById('categorySelect');
+      const subcategorySelect = document.getElementById('subcategorySelect');
+  
+      // Обработчик изменения типа
+      typeSelect.addEventListener('change', function() {
+          const selectedType = this.value;
+  
+          // Очистка и отключение категорий и подкатегорий
+          categorySelect.innerHTML = '<option value="">--Выберите категорию--</option>';
+          categorySelect.disabled = true;
+          subcategorySelect.innerHTML = '<option value="">--Выберите подкатегорию--</option>';
+          subcategorySelect.disabled = true;
+  
+          if (selectedType && categoriesByType[selectedType]) {
+              // Заполняем категории
+              categoriesByType[selectedType].forEach(cat => {
+                  const option = document.createElement('option');
+                  option.value = cat.id;
+                  option.textContent = cat.name;
+                  categorySelect.appendChild(option);
+              });
+              categorySelect.disabled = false;
+          }
+      });
+  
+      // Обработчик изменения категории
+      categorySelect.addEventListener('change', function() {
+          const selectedType = typeSelect.value;
+          const selectedCategoryId = this.value;
+  
+          // Очистка и отключение подкатегорий
+          subcategorySelect.innerHTML = '<option value="">--Выберите подкатегорию--</option>';
+          subcategorySelect.disabled = true;
+  
+          if (selectedCategoryId && categoriesByType[selectedType]) {
+              const categoryObj = categoriesByType[selectedType].find(cat => cat.id === selectedCategoryId);
+              if (categoryObj && categoryObj.subcategories) {
+                  categoryObj.subcategories.forEach(sub => {
+                      const option = document.createElement('option');
+                      option.value = sub.id;
+                      option.textContent = sub.name;
+                      subcategorySelect.appendChild(option);
+                  });
+                  subcategorySelect.disabled = false;
+              }
+          }
+      });
+  </script>
 </body>
 </html>
-
-
-        <br><br>
-
         <button type="submit">Применить фильтры</button>
     </fieldset>
 </form>
