@@ -2,8 +2,8 @@
 FROM python:3.9-slim
 
 # Устанавливаем переменные среды
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
 # Устанавливаем системные зависимости
 RUN apt-get update && apt-get install -y \
@@ -25,4 +25,8 @@ COPY . .
 #RUN python manage.py collectstatic --noinput
 
 # Запускаем приложение
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# CMD c 
+
+
+# ENTRYPOINT [ "python", "manage.py", "runserver", "0.0.0.0:8000" ]
+# CMD [  ]
